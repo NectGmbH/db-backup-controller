@@ -1,0 +1,21 @@
+---
+
+apiVersion: backup.nect.com/v1
+kind: DatabaseBackupStorageClass
+metadata:
+  name: '{{ .Release.Name }}'
+spec:
+  backupLocations:
+    - storageType: s3
+
+      storageEndpoint: minio.{{ .Release.Namespace }}.svc.cluster.local
+      storageAccessKeyID:
+        value: '{{ .Values.minio.credentials.accesskey }}'
+      storageSecretAccessKey:
+        value: '{{ .Values.minio.credentials.secretkey }}'
+      storageBucket: '{{ .Values.minio.bucket }}'
+      storageLocation: minio
+      storageUseSSL: true
+      storageInsecureSkipVerify: true
+
+...

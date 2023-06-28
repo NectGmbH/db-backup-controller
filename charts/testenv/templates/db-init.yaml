@@ -1,0 +1,82 @@
+---
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-dbinit
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+spec:
+  template:
+    spec:
+      containers:
+        - name: dbinit
+          image: {{ .Values.cockroachdb.image.repository }}:{{ .Values.cockroachdb.image.tag }}
+          command:
+            - sh
+            - -ec
+            - |
+              # VERY dirty hack: Mount has 0o440 perms on the keys, libpq is
+              # pissing itself over that so we take the keys out of there and
+              # apply "proper" permissions
+              mkdir /cockroach-certs-permfix
+              cp /cockroach-certs/* /cockroach-certs-permfix/
+              chmod 0400 /cockroach-certs-permfix/*
+
+              echo "{{ tpl (.Files.Get "files/seed.sql") . | b64enc }}" | base64 -d >/tmp/seed.sql
+
+              /cockroach/cockroach sql \
+                --host={{ include "com.nect.cockroachdb.fullname" . }}-public \
+                --port={{ .Values.cockroachdb.conf.port }} \
+                --certs-dir=/cockroach-certs-permfix \
+                --user=root \
+                --file /tmp/seed.sql
+
+              {{ if .Values.hugeDataGenerator.enabled -}}
+              echo "Generating data..." >&2
+
+              /randinsert/randinsert {{ .Values.hugeDataGenerator.numEntries | int }} {{ .Values.hugeDataGenerator.entrySize | int }} >/tmp/insert.sql
+
+              /cockroach/cockroach sql \
+                --host={{ include "com.nect.cockroachdb.fullname" . }}-public \
+                --port={{ .Values.cockroachdb.conf.port }} \
+                --certs-dir=/cockroach-certs-permfix \
+                --database={{ .Values.crdbDB }} \
+                --user=root \
+                --file /tmp/insert.sql
+
+              rm /tmp/insert.sql
+              {{- end }}
+          volumeMounts:
+            - name: cockroach-certs
+              mountPath: /cockroach-certs
+            - name: randinsert
+              mountPath: /randinsert
+      initContainers:
+        - name: compile-randinsert
+          image: golang:alpine
+          command:
+            - sh
+            - -ec
+            - |
+              cd /randinsert-code
+              go build -ldflags "-s -w" -o /randinsert/randinsert
+          env:
+            - name: CGO_ENABLED
+              value: '0'
+          volumeMounts:
+            - name: randinsert
+              mountPath: /randinsert
+            - name: randinsert-code
+              mountPath: /randinsert-code
+        {{- include "com.nect.wait-crdb-conn" . | nindent 8 }}
+      restartPolicy: Never
+      volumes:
+        {{- include "com.nect.mount-crdb-certs-volume" . | nindent 8 }}
+        - name: randinsert
+          emptyDir: {}
+        - name: randinsert-code
+          configMap:
+            name: {{ .Release.Name }}-randinsert-code
+
+...

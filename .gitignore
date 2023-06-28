@@ -1,0 +1,4 @@
+charts/*/charts/*.tgz
+ci/code-generator
+ci/controller-gen
+cmd/backup-controller/backup-controller

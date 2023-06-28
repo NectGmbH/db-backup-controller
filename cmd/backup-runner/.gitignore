@@ -1,0 +1,6 @@
+backup-runner
+
+# FIXME: Remove
+backup.yaml
+certs/
+storageSpec.yaml

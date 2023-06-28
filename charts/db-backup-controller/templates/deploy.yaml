@@ -1,0 +1,58 @@
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: db-backup-controller
+  labels:
+    app.kubernetes.io/name: db-backup-controller
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    helm.sh/chart: '{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}'
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: db-backup-controller
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/managed-by: {{ .Release.Service }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: db-backup-controller
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+        helm.sh/chart: '{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}'
+      name: db-backup-controller
+    spec:
+      containers:
+        - name: db-backup-controller
+          image: '{{ .Values.image }}'
+          imagePullPolicy: '{{ .Values.imagePullPolicy }}'
+          env:
+            - name: JSON_LOG
+              value: '{{ eq .Values.jsonLog true | toJson }}'
+            - name: LOG_LEVEL
+              value: '{{ .Values.logLevel }}'
+            - name: IMAGE_PREFIX
+              value: '{{ .Values.image }}'
+            - name: RESCAN_INTERVAL
+              value: '{{ .Values.rescanInterval }}'
+            - name: TARGET_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          ports:
+            - containerPort: 3000
+              name: metrics
+{{ if ne (toString .Values.imagePullSecret.registry) "" }}
+      imagePullSecrets:
+        - name: db-backup-controller-registry
+{{ end }}
+      securityContext:
+        fsGroup: 1000
+        runAsGroup: 1000
+        runAsUser: 1000
+      serviceAccountName: "{{ .Release.Name }}"
+
+...

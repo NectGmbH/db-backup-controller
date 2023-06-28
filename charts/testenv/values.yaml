@@ -1,0 +1,52 @@
+---
+
+crdbCA:
+  extraUsers: []
+  validityCA: 36500   # 100 years
+  validityNode: 36500 # 100 years
+  validityUser: 36500 # 100 years
+
+crdbDB: database
+
+cockroachdb:
+  conf:
+    cache: 256MB
+    max-sql-memory: 256MB
+    single-node: true
+
+  statefulset:
+    replicas: 1
+    resources:
+      requests: {}
+
+  storage:
+    persistentVolume:
+      enabled: true
+      size: 1Gi
+      storageClass: "openebs-hostpath"
+
+  tls:
+    enabled: true
+    certs:
+      provided: true
+      clientRootSecret: crdb-ca-root
+      nodeSecret: crdb-ca-node
+      tlsSecret: true
+
+      selfSigner:
+        enabled: false
+
+hugeDataGenerator:
+  enabled: false
+  entrySize: 1048576 # 1Mi
+  numEntries: 10240 # 1Mi * numEntries = 10Gi
+
+minio:
+  bucket: backup
+  credentials:
+    accesskey: 'minioaccess'
+    secretkey: 'miniosecret123'
+  image: minio/minio:RELEASE.2021-07-12T02-44-53Z
+  initImage: bitnami/minio-client
+
+...

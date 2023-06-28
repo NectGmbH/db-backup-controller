@@ -1,0 +1,146 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.11.3
+  creationTimestamp: null
+  name: databasebackupstorageclasses.backup.nect.com
+spec:
+  group: backup.nect.com
+  names:
+    kind: DatabaseBackupStorageClass
+    listKind: DatabaseBackupStorageClassList
+    plural: databasebackupstorageclasses
+    singular: databasebackupstorageclass
+  scope: Cluster
+  versions:
+  - name: v1
+    schema:
+      openAPIV3Schema:
+        description: DatabaseBackupStorageClass contains the Kubernetes document for
+          the DatabaseBackupStorageClassSpec
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: DatabaseBackupStorageClassSpec contains a list of locations
+              to write the backups to when using this DatabaseBackupStorageClass
+            properties:
+              backupLocations:
+                description: BackupLocations defines a number of locations the backups
+                  written to this DatabaseBackupStorageClass should be uploaded to.
+                items:
+                  description: DatabaseBackupStorageLocation describes how to connect
+                    to the storage location for uploading the backup
+                  properties:
+                    storageAccessKeyID:
+                      description: StorageAccessKeyID and StorageSecretAccessKey define
+                        the credentials to access the StorageBucket
+                      properties:
+                        fromSecret:
+                          description: FromSecret references a secret to fetch the
+                            value from
+                          properties:
+                            key:
+                              description: Key specifies the key within the refereced
+                                secret to fetch the value from
+                              type: string
+                            name:
+                              description: Name specifies the name of the secret to
+                                fetch the value from. Must exist in the same namespace
+                                as the resource
+                              type: string
+                          required:
+                          - key
+                          - name
+                          type: object
+                        value:
+                          description: Value specifies a plain text value for the
+                            secret. When filled this will prevent the lookup of the
+                            FromSecret reference.
+                          type: string
+                      type: object
+                    storageBucket:
+                      description: StorageBucket defines to which bucket to upload
+                        the files
+                      type: string
+                    storageEndpoint:
+                      description: StorageEndpoint defines the MinIO / S3 endpoint
+                        to connect to
+                      type: string
+                    storageInsecureSkipVerify:
+                      default: false
+                      description: StorageInsecureSkipVerify defines whether to skip
+                        TLS cert verify as of unknown CA / ...
+                      type: boolean
+                    storageLocation:
+                      description: StorageLocation defines the location the bucket
+                        exists in (i.e. "minio", "eu-west-1", ...)
+                      type: string
+                    storageSecretAccessKey:
+                      description: Secret contains an optional Value or reference
+                        to fetch the value FromSecret
+                      properties:
+                        fromSecret:
+                          description: FromSecret references a secret to fetch the
+                            value from
+                          properties:
+                            key:
+                              description: Key specifies the key within the refereced
+                                secret to fetch the value from
+                              type: string
+                            name:
+                              description: Name specifies the name of the secret to
+                                fetch the value from. Must exist in the same namespace
+                                as the resource
+                              type: string
+                          required:
+                          - key
+                          - name
+                          type: object
+                        value:
+                          description: Value specifies a plain text value for the
+                            secret. When filled this will prevent the lookup of the
+                            FromSecret reference.
+                          type: string
+                      type: object
+                    storageType:
+                      description: StorageType defines which storage engine to load
+                        for this storage location
+                      enum:
+                      - s3
+                      type: string
+                    storageUseSSL:
+                      default: false
+                      description: StorageUseSSL defines whether to use TLS encrypted
+                        connection to storage
+                      type: boolean
+                  required:
+                  - storageAccessKeyID
+                  - storageBucket
+                  - storageEndpoint
+                  - storageLocation
+                  - storageSecretAccessKey
+                  - storageType
+                  type: object
+                minItems: 1
+                type: array
+            required:
+            - backupLocations
+            type: object
+        required:
+        - spec
+        type: object
+    served: true
+    storage: true

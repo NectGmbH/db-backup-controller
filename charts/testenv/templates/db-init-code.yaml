@@ -1,0 +1,12 @@
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-randinsert-code
+data:
+  {{- range (list "go.mod" "go.sum" "randinsert.go") }}
+  {{ . }}: |{{ $.Files.Get (list "files" . | join "/") | nindent 4 }}
+  {{ end }}
+
+...

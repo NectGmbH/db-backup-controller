@@ -1,0 +1,39 @@
+---
+
+containers:
+  - name: backup
+    image: "" # To be filled in by each depending engine
+    imagePullPolicy: IfNotPresent
+
+    env:
+      - name: CONFIG_DIR
+        value: /config
+      - name: LISTEN
+        value: ':3000'
+
+    ports:
+      - containerPort: 3000
+        name: runner-http
+
+    resources: {} # Unspecified in base as it might strongly differ in each engine
+
+    volumeMounts:
+      # The "runner-config" volume is automatically provided by the
+      # STS resource generator
+      - name: runner-config
+        mountPath: /config
+
+imagePullSecrets: [] # To be set by code
+
+securityContext:
+  fsGroup: 1337
+  fsGroupChangePolicy: OnRootMismatch
+  runAsGroup: 1337
+  runAsNonRoot: true
+  runAsUser: 1337
+
+serviceAccountName: db-backup-runner
+
+volumes: [] # Shall be filled by code
+
+...

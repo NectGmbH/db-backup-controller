@@ -1,0 +1,19 @@
+---
+
+apiVersion: v2
+name: db-backup-controller-testenv
+version: v0.0.1
+kubeVersion: '>= 1.21.0'
+description: Test environment containing CockroachDB to test db-backup-controller
+type: application
+maintainers:
+  - name: Knut Ahlers
+    email: ka@nect.com
+appVersion: v0.0.1
+
+dependencies:
+  - name: cockroachdb
+    version: 11.0.0
+    repository: https://charts.cockroachdb.com/
+
+...

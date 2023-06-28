@@ -1,0 +1,95 @@
+---
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: '{{ .Release.Name }}-minio-credentials'
+type: Opaque
+stringData:
+  accesskey: '{{ .Values.minio.credentials.accesskey }}'
+  secretkey: '{{ .Values.minio.credentials.secretkey }}'
+
+---
+
+apiVersion: minio.min.io/v2
+kind: Tenant
+metadata:
+  name: '{{ .Release.Name }}-minio'
+spec:
+  certConfig: {}
+  credsSecret:
+    name: '{{ .Release.Name }}-minio-credentials'
+  image: '{{ .Values.minio.image }}'
+  mountPath: /export
+
+  serviceMetadata:
+    minioServiceAnnotations:
+      service.kubernetes.io/topology-aware-hints: auto
+
+  pools:
+    - servers: 1
+
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+
+      volumeClaimTemplate:
+        apiVersion: v1
+        kind: persistentvolumeclaims
+        metadata: {}
+        spec:
+          accessModes:
+          - ReadWriteOnce
+          resources:
+            requests:
+              storage: 10Gi
+          storageClassName: openebs-hostpath
+        status: {}
+      volumesPerServer: 4
+
+  requestAutoCert: true
+
+  podManagementPolicy: Parallel
+
+---
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: '{{ .Release.Name }}-minio-init'
+spec:
+  template:
+    spec:
+      containers:
+      - name: init-minio
+        image: '{{ .Values.minio.initImage }}'
+        env:
+          - name: MINIO_SERVER_HOST
+            value: "minio"
+          - name: MINIO_SERVER_ACCESS_KEY
+            valueFrom:
+              secretKeyRef:
+                name: '{{ .Release.Name }}-minio-credentials'
+                key: accesskey
+          - name: MINIO_SERVER_SECRET_KEY
+            valueFrom:
+              secretKeyRef:
+                name: '{{ .Release.Name }}-minio-credentials'
+                key: secretkey
+        command:
+          - sh
+          - -ec
+          - |
+            echo "Configuring alias to access tenant..." >&2
+            while ! mc --insecure alias set minio https://${MINIO_SERVER_HOST} ${MINIO_SERVER_ACCESS_KEY} ${MINIO_SERVER_SECRET_KEY}; do
+              echo "Failed. Retrying..." >&2
+              sleep 5
+            done
+
+            echo "Creating bucket if not exists..." >&2
+            mc --insecure mb minio/{{ .Values.minio.bucket }} || true
+            # EOS
+      restartPolicy: Never
+
+...

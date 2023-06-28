@@ -1,0 +1,19 @@
+#!/bin/bash
+set -euxo pipefail
+
+target="${1:-}"
+[[ -n $target ]] || {
+  echo "Missing parameter: Binary target" >&2
+  exit 1
+}
+
+tmpdir=$(mktemp -d)
+trap "rm -rf ${tmpdir}" EXIT
+
+export GOPATH="${tmpdir}"
+go install \
+  -mod=readonly \
+  -modcacherw \
+  sigs.k8s.io/controller-tools/cmd/controller-gen@${CONTROLLER_GEN_VERSION:-latest}
+
+mv "${tmpdir}/bin/controller-gen" "${target}"

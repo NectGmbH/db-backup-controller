@@ -1,0 +1,31 @@
+---
+
+apiVersion: backup.nect.com/v1
+kind: DatabaseBackup
+metadata:
+  name: '{{ .Release.Name }}'
+spec:
+  backupInterval: 12
+  backupStorageClass: '{{ .Release.Name }}'
+  cockroach:
+    database: '{{ .Values.crdbDB }}'
+    host: {{ include "com.nect.cockroachdb.fullname" . }}-public.{{ .Release.Namespace }}.svc.cluster.local
+    port: {{ .Values.cockroachdb.conf.port }}
+    user: root
+    cert:
+      fromSecret:
+        name: crdb-ca-root
+        key: tls.crt
+    certCA:
+      fromSecret:
+        name: crdb-ca
+        key: tls.crt
+    certKey:
+      fromSecret:
+        name: crdb-ca-root
+        key: tls.key
+  databaseType: cockroach
+  databaseVersion: v23
+  useSingleBackupTarget: false
+
+...

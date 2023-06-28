@@ -1,0 +1,35 @@
+---
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ .Release.Name }}-debug
+spec:
+  containers:
+    - name: dbinit
+      image: {{ .Values.cockroachdb.image.repository }}:{{ .Values.cockroachdb.image.tag }}
+      command:
+        - sh
+        - -ec
+        - |
+          # VERY dirty hack: Mount has 0o440 perms on the keys, libpq is
+          # pissing itself over that so we take the keys out of there and
+          # apply "proper" permissions
+          mkdir /cockroach-certs-permfix
+          cp /cockroach-certs/* /cockroach-certs-permfix/
+          chmod 0400 /cockroach-certs-permfix/*
+
+          echo '/cockroach/cockroach sql --host={{ include "com.nect.cockroachdb.fullname" . }}-public --port={{ .Values.cockroachdb.conf.port }} --certs-dir=/cockroach-certs-permfix --user=root' >/usr/local/bin/csql
+          chmod 0755 /usr/local/bin/csql
+
+          while :; do sleep 1; done
+      volumeMounts:
+      - name: cockroach-certs
+        mountPath: /cockroach-certs
+  initContainers:
+    {{- include "com.nect.wait-crdb-conn" . | nindent 4 }}
+  restartPolicy: Never
+  volumes:
+    {{- include "com.nect.mount-crdb-certs-volume" . | nindent 4 }}
+
+...
