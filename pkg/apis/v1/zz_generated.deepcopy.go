@@ -238,6 +238,7 @@ func (in *DatabaseBackupStorageLocation) DeepCopyInto(out *DatabaseBackupStorage
 	*out = *in
 	out.StorageAccessKeyID = in.StorageAccessKeyID
 	out.StorageSecretAccessKey = in.StorageSecretAccessKey
+	out.EncryptionPass = in.EncryptionPass
 	return
 }
 

@@ -9,6 +9,7 @@ import (
 	"github.com/robfig/cron/v3"
 	"github.com/sirupsen/logrus"
 
+	"github.com/NectGmbH/db-backup-controller/pkg/cryptostream"
 	"github.com/NectGmbH/db-backup-controller/pkg/storage"
 )
 
@@ -46,7 +47,30 @@ func executeBackup() (err error) {
 		r, w := io.Pipe()
 
 		go func() {
-			if err = w.CloseWithError(engine.CreateBackup(w)); err != nil {
+			if err = w.CloseWithError(func(w io.Writer) (err error) {
+				var (
+					backupDest = w
+					cryptW     *cryptostream.CryptoWriteCloser
+				)
+
+				if loc.EncryptionPass.Value != "" {
+					cryptW, err = cryptostream.NewWriter(w, []byte(loc.EncryptionPass.Value))
+					if err != nil {
+						return errors.Wrap(err, "creating crypto-writer")
+					}
+					backupDest = cryptW
+				}
+
+				if err = engine.CreateBackup(backupDest); err != nil {
+					return errors.Wrap(err, "creating backup")
+				}
+
+				if cryptW == nil {
+					return nil
+				}
+
+				return errors.Wrap(cryptW.Close(), "closing crypto writer")
+			}(w)); err != nil {
 				logger.WithError(err).Error("closing backup pipe")
 			}
 		}()

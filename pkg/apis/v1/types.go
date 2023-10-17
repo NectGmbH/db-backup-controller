@@ -260,4 +260,11 @@ type DatabaseBackupStorageLocation struct {
 	// +kubebuilder:validation:Optional
 	// +kubebuilder:default=false
 	StorageInsecureSkipVerify bool `json:"storageInsecureSkipVerify"`
+
+	// EncryptionPass defines the passphrase to be used to encrypt the
+	// backup before writing it to the storage server specified in this
+	// location. Leaving this empty will DISABLE encryption!
+	//
+	// +kubebuilder:validation:Optional
+	EncryptionPass Secret `json:"encryptionPass"`
 }

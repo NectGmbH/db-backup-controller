@@ -46,6 +46,7 @@ require (
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/rs/xid v1.4.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
+	github.com/starius/aesctrat v0.0.0-20220326090028-28013a25aede // indirect
 	golang.org/x/crypto v0.6.0 // indirect
 	golang.org/x/net v0.8.0 // indirect
 	golang.org/x/oauth2 v0.0.0-20220223155221-ee480838109b // indirect

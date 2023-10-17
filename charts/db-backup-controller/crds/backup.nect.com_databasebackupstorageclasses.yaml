@@ -44,6 +44,35 @@ spec:
                   description: DatabaseBackupStorageLocation describes how to connect
                     to the storage location for uploading the backup
                   properties:
+                    encryptionPass:
+                      description: EncryptionPass defines the passphrase to be used
+                        to encrypt the backup before writing it to the storage server
+                        specified in this location. Leaving this empty will DISABLE
+                        encryption!
+                      properties:
+                        fromSecret:
+                          description: FromSecret references a secret to fetch the
+                            value from
+                          properties:
+                            key:
+                              description: Key specifies the key within the refereced
+                                secret to fetch the value from
+                              type: string
+                            name:
+                              description: Name specifies the name of the secret to
+                                fetch the value from. Must exist in the same namespace
+                                as the resource
+                              type: string
+                          required:
+                          - key
+                          - name
+                          type: object
+                        value:
+                          description: Value specifies a plain text value for the
+                            secret. When filled this will prevent the lookup of the
+                            FromSecret reference.
+                          type: string
+                      type: object
                     storageAccessKeyID:
                       description: StorageAccessKeyID and StorageSecretAccessKey define
                         the credentials to access the StorageBucket

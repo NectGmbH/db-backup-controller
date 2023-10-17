@@ -36,6 +36,8 @@ cockroachdb:
       selfSigner:
         enabled: false
 
+encryptionPass: tKnbMtLgKep52Zo6McETo47XoXrqjyJyMAeRrZKmr5QrVbJmWArhmxVzayi4Mxu7
+
 hugeDataGenerator:
   enabled: false
   entrySize: 1048576 # 1Mi

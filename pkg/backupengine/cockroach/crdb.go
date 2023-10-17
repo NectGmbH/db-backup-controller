@@ -21,7 +21,6 @@ import (
 	backupControllerV1 "github.com/NectGmbH/db-backup-controller/pkg/apis/v1"
 	"github.com/NectGmbH/db-backup-controller/pkg/backupengine/base"
 	"github.com/NectGmbH/db-backup-controller/pkg/backupengine/opts"
-	"github.com/NectGmbH/db-backup-controller/pkg/storage/helper"
 )
 
 const (
@@ -148,7 +147,7 @@ func (e *Engine) Init(options opts.InitOpts) error {
 // backup to be restored. The means of doing so depends on the
 // engine itself. The contents of the reader will be the same
 // the engine provided during the CreateBackup result
-func (e *Engine) RestoreBackup(r helper.ReaderAtCloser, size int64) error {
+func (e *Engine) RestoreBackup(r io.ReaderAt, size int64) error {
 	if e.hdl != nil {
 		// A listener is there, restore might be in progress
 		return errors.New("backup sender still active")

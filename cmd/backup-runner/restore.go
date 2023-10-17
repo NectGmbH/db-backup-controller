@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"io"
 	"time"
 
 	"github.com/pkg/errors"
@@ -9,6 +10,7 @@ import (
 
 	v1 "github.com/NectGmbH/db-backup-controller/pkg/apis/v1"
 	"github.com/NectGmbH/db-backup-controller/pkg/backupengine"
+	"github.com/NectGmbH/db-backup-controller/pkg/cryptostream"
 	"github.com/NectGmbH/db-backup-controller/pkg/storage"
 	"github.com/NectGmbH/db-backup-controller/pkg/storage/helper"
 )
@@ -72,7 +74,21 @@ func restoreForLocation(engine backupengine.Implementation, restoreMode string, 
 		}
 	}()
 
-	if err = engine.RestoreBackup(r, size); err != nil {
+	var (
+		backupSrc  io.ReaderAt = r
+		backupSize             = size
+	)
+
+	if loc.EncryptionPass.Value != "" {
+		cryptR, err := cryptostream.NewReaderAt(r, []byte(loc.EncryptionPass.Value))
+		if err != nil {
+			return errors.Wrap(err, "creating crypto-reader")
+		}
+		backupSrc = cryptR
+		backupSize = size - cryptostream.HeaderSize
+	}
+
+	if err = engine.RestoreBackup(backupSrc, backupSize); err != nil {
 		return errors.Wrap(err, "restoring backup")
 	}
 

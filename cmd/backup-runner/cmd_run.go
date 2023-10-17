@@ -42,6 +42,13 @@ func init() {
 }
 
 func cmdRunRunE(cmd *cobra.Command, _ []string) (err error) {
+	// First lets tell our OPS a little about the backup
+	logrus.WithFields(logrus.Fields{
+		"encryption": isEncrypted(),
+		"name":       configBackup.Name,
+		"namespace":  configBackup.Namespace,
+	}).Info("backup-runner started run-loop")
+
 	// Initialize the engine once
 	engine = backupengine.GetByName(configBackup.Spec.DatabaseType)
 	if err = engine.Init(opts.InitOpts{
@@ -116,6 +123,32 @@ func handleIPCRequest(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 	w.WriteHeader(http.StatusCreated)
+}
+
+func isEncrypted() string {
+	var (
+		hasPass   bool
+		hasNoPass bool
+	)
+
+	for _, loc := range configStorage.BackupLocations {
+		if loc.EncryptionPass.Value == "" {
+			hasNoPass = true
+		} else {
+			hasPass = true
+		}
+	}
+
+	switch {
+	case hasPass && !hasNoPass:
+		return "fully-encrypted"
+
+	case hasPass && hasNoPass:
+		return "partially-encrypted"
+
+	default:
+		return "not-encrypted"
+	}
 }
 
 func triggerIPCRequest(cmd *cobra.Command, payload ipcPayload) error {

@@ -8,7 +8,6 @@ import (
 	coreV1 "k8s.io/api/core/v1"
 
 	"github.com/NectGmbH/db-backup-controller/pkg/backupengine/opts"
-	"github.com/NectGmbH/db-backup-controller/pkg/storage/helper"
 )
 
 type (
@@ -26,11 +25,11 @@ type (
 		// one-shot initialization tasks like registering new HTTP
 		// handlers
 		Init(opts.InitOpts) error
-		// RestoreBackup receives an ReaderAtCloser with the contents of
+		// RestoreBackup receives an io.ReaderAt with the contents of
 		// the backup to be restored and the size of the backup. The
 		// means of doing so depends on the engine itself. The contents
 		// of the reader will be the same the engine provided during
 		// the CreateBackup result
-		RestoreBackup(helper.ReaderAtCloser, int64) error
+		RestoreBackup(io.ReaderAt, int64) error
 	}
 )
