@@ -48,7 +48,7 @@ spec:
                   to be divisible by the given interval. (i.e. if you specify 2h the
                   backup will run 00:00, 02:00, 04:00, ...)'
                 format: int64
-                minimum: 12
+                minimum: 1
                 type: integer
               backupStorageClass:
                 description: BackupStorageClass defines where to store the backups

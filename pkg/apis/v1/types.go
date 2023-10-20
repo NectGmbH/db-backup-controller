@@ -66,7 +66,7 @@ type DatabaseBackupSpec struct {
 	// to be divisible by the given interval. (i.e. if you specify
 	// 2h the backup will run 00:00, 02:00, 04:00, ...)
 	//
-	// +kubebuilder:validation:Minimum=12
+	// +kubebuilder:validation:Minimum=1
 	// +kubebuilder:validation:Optional
 	BackupIntervalHours int64 `json:"backupInterval"`
 	// RetentionConfig defines the retention rules applied to store
