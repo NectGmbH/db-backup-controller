@@ -1,0 +1,17 @@
+{{ if .Values.enableServiceMonitor -}}
+---
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ .Release.Name }}-runners
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: runner
+      app.kubernetes.io/managed-by: db-backup-controller
+  endpoints:
+    - port: api
+
+...
+{{- end }}

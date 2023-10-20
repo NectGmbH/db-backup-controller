@@ -8,10 +8,15 @@ imagePullPolicy: 'IfNotPresent'
 jsonLog: true
 # Valid log-levels for logrus (debug, info, error are used)
 logLevel: 'info'
-# Prefix for metrics exported in the controller
-metricsPrefix: 'k8s_cert_monitor'
 # How often to iterate through all existing backup definitions (1 / rescanInterval)
 rescanInterval: 1h
+alertmanager:
+  enableRules: true
+  customRules: []
+  jobFailed:
+    for: 10m
+enableGrafanaDashboard: true
+enableServiceMonitor: true
 # Registry configuration to access the image provided above
 # (no configuration is added when registry is an empty string)
 imagePullSecret:

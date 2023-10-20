@@ -13,6 +13,7 @@ import (
 	"github.com/NectGmbH/db-backup-controller/pkg/storage"
 )
 
+//nolint:gocognit // Makes more sense to keep as one unit
 func executeBackup() (err error) {
 	// * Asks requested engine to take a backup (=> ./pkg/backupengine/...)
 	// 	* Engine knows what to execute to backup $db from $host with $credentials
@@ -84,6 +85,10 @@ func executeBackup() (err error) {
 			if err := stor.CleanupBackups(context.Background()); err != nil {
 				logger.WithError(err).Error("executing storage cleanup")
 			}
+
+			if err := updateBackupCountFromLocation(loc); err != nil {
+				logger.WithError(err).Error("updating backup count metric")
+			}
 		}()
 
 		logger.Info("backup completed")
@@ -136,6 +141,7 @@ func tickAutoBackup(ticker chan struct{}) (err error) {
 		}
 
 		logrus.WithField("next_execution", nextExecution.Format(time.RFC3339)).Info("waiting for next execution")
+		monitor.UpdateNextScheduled(nextExecution)
 		time.Sleep(time.Until(nextExecution))
 
 		ticker <- struct{}{}

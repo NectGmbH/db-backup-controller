@@ -13,11 +13,14 @@ import (
 	httpHelper "github.com/Luzifer/go_helpers/v2/http"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
+	v1 "github.com/NectGmbH/db-backup-controller/pkg/apis/v1"
 	"github.com/NectGmbH/db-backup-controller/pkg/backupengine"
 	"github.com/NectGmbH/db-backup-controller/pkg/backupengine/opts"
+	"github.com/NectGmbH/db-backup-controller/pkg/storage"
 )
 
 type (
@@ -35,6 +38,7 @@ var (
 		Short: "Starts the periodic backup routine together with the IPC server for `backup` and `restore` commands",
 		RunE:  cmdRunRunE,
 	}
+	monitor *appMonitor
 )
 
 func init() {
@@ -48,6 +52,13 @@ func cmdRunRunE(cmd *cobra.Command, _ []string) (err error) {
 		"name":       configBackup.Name,
 		"namespace":  configBackup.Namespace,
 	}).Info("backup-runner started run-loop")
+
+	// Initialize the monitoring
+	monitor = newAppMonitor()
+
+	if err = updateBackupCountFromLocation(configStorage.BackupLocations[0]); err != nil {
+		logrus.WithError(err).Error("updating backup count metric")
+	}
 
 	// Initialize the engine once
 	engine = backupengine.GetByName(configBackup.Spec.DatabaseType)
@@ -67,6 +78,9 @@ func cmdRunRunE(cmd *cobra.Command, _ []string) (err error) {
 			host, _, _ := net.SplitHostPort(r.RemoteAddr)
 			return host == "127.0.0.1" || host == "[::1]"
 		})
+
+	// Register Prometheus metrics
+	httpMux.Handle("/metrics", promhttp.Handler())
 
 	// Start and run the HTTP server
 	listenAddr, err := cmd.Flags().GetString(flagListen)
@@ -204,22 +218,44 @@ func triggerRunAction(action string, args []string) error {
 
 	switch action {
 	case "backup":
-		if err := executeBackup(); err != nil {
+		err := executeBackup()
+		if err != nil {
 			logrus.WithError(err).Error("executing backup action")
 		}
+		monitor.RegisterJobStatus(metricsLabelValueJobTypeBackup, err == nil)
 
 	case "restore":
 		if len(args) != 2 { //nolint:gomnd
 			return errors.Errorf("invalid number of arguments")
 		}
 
-		if err := executeRestore(args[0], args[1]); err != nil {
+		err := executeRestore(args[0], args[1])
+		if err != nil {
 			logrus.WithError(err).Error("executing restore action")
 		}
+		monitor.RegisterJobStatus(metricsLabelValueJobTypeRestore, err == nil)
 
 	default:
 		logrus.WithError(errors.Errorf("unknown action %s", action)).Error("invalid action called")
 	}
+
+	return nil
+}
+
+func updateBackupCountFromLocation(loc v1.DatabaseBackupStorageLocation) error {
+	stor, err := storage.New(context.Background(), &loc, &configBackup)
+	if err != nil {
+		return errors.Wrap(err, "getting storage provider")
+	}
+
+	backups, err := stor.ListAvailableBackups(context.Background())
+	if err != nil {
+		return errors.Wrap(err, "getting backup list from storage")
+	}
+	// In theory all locations SHOULD have the same amount of
+	// backups stored. Therefore it SHOULD be fine to just count
+	// in any location and set the number.
+	monitor.UpdateStoredBackupCount(len(backups))
 
 	return nil
 }

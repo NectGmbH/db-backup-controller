@@ -12,6 +12,7 @@ require (
 	github.com/sirupsen/logrus v1.9.0
 	github.com/starius/aesctrat v0.0.0-20220326090028-28013a25aede
 	github.com/stretchr/testify v1.8.2
+	golang.org/x/crypto v0.6.0
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/api v0.27.1
 	k8s.io/apimachinery v0.27.1
@@ -47,7 +48,6 @@ require (
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rs/xid v1.4.0 // indirect
-	golang.org/x/crypto v0.6.0 // indirect
 	golang.org/x/net v0.8.0 // indirect
 	golang.org/x/oauth2 v0.0.0-20220223155221-ee480838109b // indirect
 	golang.org/x/sys v0.6.0 // indirect

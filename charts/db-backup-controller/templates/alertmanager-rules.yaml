@@ -1,0 +1,26 @@
+{{ if .Values.alertmanager.enableRules -}}
+---
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  labels:
+    prometheus: kube-prometheus-stack-prometheus
+    role: alert-rules
+  name: {{ .Release.Name }}
+spec:
+  groups:
+    - name: "db-backup-controller.rules"
+      rules:
+        - alert: JobFailed
+          for: {{ .Values.alertmanager.jobFailed.for | quote }}
+          expr: db_backup_controller_last_job_success == 0
+          annotations:
+            message: {{"The \"{{ $labels.job_type }}\" Job for backup \"{{ $labels.name }}\" in namespace \"{{ $labels.exported_namespace }}\" failed."}}
+    {{ if .Values.alertmanager.customRules }}
+    - name: "custom.rules"
+      rules:{{ .Values.alertmanager.customRules | toYaml | nindent 8 }}
+    {{ end }}
+
+...
+{{- end }}

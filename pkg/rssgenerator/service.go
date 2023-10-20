@@ -20,6 +20,7 @@ func generateService(o Opts, res *Result) (err error) {
 		Spec: corev1.ServiceSpec{
 			Ports: []corev1.ServicePort{
 				{
+					Name:     "api",
 					Protocol: corev1.ProtocolTCP,
 					Port:     servicePort,
 				},
