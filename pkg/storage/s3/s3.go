@@ -110,6 +110,27 @@ func (s Storage) CleanupBackups(ctx context.Context) (err error) {
 		s.labels.Remove(entry)
 	}
 
+	for _, entry := range s.labels.GetRetainedEntries() {
+		_, err := s.client.StatObject(
+			ctx,
+			s.storageLocation.StorageBucket,
+			path.Join(s.storagePath, entry),
+			minio.StatObjectOptions{},
+		)
+		if err == nil {
+			// We got a stat, that object is there, skip
+			continue
+		}
+
+		errResponse := minio.ToErrorResponse(err)
+		if errResponse.Code == "NoSuchKey" {
+			// Well, that backup is for sure gone...
+			s.labels.Remove(entry)
+			continue
+		}
+		return errors.Wrap(err, "fetching object stats for backup")
+	}
+
 	// And finally we store the state back to the bucket
 	return errors.Wrap(
 		s.saveLabelManager(ctx),
