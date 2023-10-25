@@ -180,11 +180,6 @@ type PostgresConfig struct {
 	User string `json:"user"`
 	// Pass specifies a reference to or the value of the users password
 	Pass Secret `json:"pass"`
-	// DSNParameters is an optional map[string]string to define further
-	// parameters for the DSN like `sslmode`, `connect_timeout`, etc.
-	// The `user`, `host`, `port`, `dbname`, `pass` parameters are NOT
-	// settable through this and are overwritten unconditionally.
-	DSNParameters map[string]string `json:"dsnParameters"`
 }
 
 // DatabaseBackupStorageClass contains the Kubernetes document for

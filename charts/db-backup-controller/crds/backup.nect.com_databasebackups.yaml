@@ -264,14 +264,6 @@ spec:
                   database:
                     description: Database specifies the database to be backed up
                     type: string
-                  dsnParameters:
-                    additionalProperties:
-                      type: string
-                    description: DSNParameters is an optional map[string]string to
-                      define further parameters for the DSN like `sslmode`, `connect_timeout`,
-                      etc. The `user`, `host`, `port`, `dbname`, `pass` parameters
-                      are NOT settable through this and are overwritten unconditionally.
-                    type: object
                   host:
                     description: Host specifies the IP or DNS name to connect to
                     type: string
@@ -313,7 +305,6 @@ spec:
                     type: string
                 required:
                 - database
-                - dsnParameters
                 - host
                 - pass
                 - port

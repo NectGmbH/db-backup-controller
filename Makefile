@@ -1,4 +1,4 @@
-ENGINE_IMAGES:=$(shell find ./pkg/backupengine -name 'Dockerfile' | sed -E 's@.*/([^/]+)/Dockerfile@\1@')
+ENGINE_IMAGES:=$(shell find ./pkg/backupengine -name 'Dockerfile*' | sed -E 's@.*/([^/]+)/Dockerfile.*@\1@' | sort | uniq)
 CODE_GEN_VERSION:=v0.28.1
 HELM:=helm3
 LOCAL_IMAGE:=registry.local.nect/db-backup-controller:t$(shell date +%s)

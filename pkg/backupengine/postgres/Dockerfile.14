@@ -1,0 +1,10 @@
+ARG CONTROLLER_IMAGE
+FROM ${CONTROLLER_IMAGE} as controller
+
+
+FROM postgres:14-bullseye
+
+COPY --from=controller /usr/local/bin/backup-runner /usr/local/bin/
+
+ENTRYPOINT ["/usr/local/bin/backup-runner", "run"]
+CMD ["--"]

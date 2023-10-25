@@ -114,7 +114,7 @@ func (in *DatabaseBackupSpec) DeepCopyInto(out *DatabaseBackupSpec) {
 	if in.Postgres != nil {
 		in, out := &in.Postgres, &out.Postgres
 		*out = new(PostgresConfig)
-		(*in).DeepCopyInto(*out)
+		**out = **in
 	}
 	return
 }
@@ -274,13 +274,6 @@ func (in *MySQLConfig) DeepCopy() *MySQLConfig {
 func (in *PostgresConfig) DeepCopyInto(out *PostgresConfig) {
 	*out = *in
 	out.Pass = in.Pass
-	if in.DSNParameters != nil {
-		in, out := &in.DSNParameters, &out.DSNParameters
-		*out = make(map[string]string, len(*in))
-		for key, val := range *in {
-			(*out)[key] = val
-		}
-	}
 	return
 }
 
