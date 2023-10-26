@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"path"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -105,4 +106,19 @@ func (e *Engine) RestoreBackup(r io.ReaderAt, size int64) error {
 	cmd.Stderr = os.Stderr
 
 	return errors.Wrap(cmd.Run(), "running psql")
+}
+
+// Unpack takes the backed up contents and puts then imto a single
+// SQL file
+func (Engine) Unpack(r io.ReaderAt, size int64, destDir string) error {
+	f, err := os.Create(path.Join(destDir, "backup.sql")) //#nosec:G304 // It's intended to write to use specified location
+	if err != nil {
+		return errors.Wrap(err, "creating output file")
+	}
+
+	if _, err = io.Copy(f, io.NewSectionReader(r, 0, size)); err != nil {
+		return errors.Wrap(err, "copying file contents")
+	}
+
+	return errors.Wrap(f.Close(), "closing output file")
 }

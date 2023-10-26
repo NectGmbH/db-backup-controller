@@ -30,6 +30,14 @@ type (
 		// means of doing so depends on the engine itself. The contents
 		// of the reader will be the same the engine provided during
 		// the CreateBackup result
-		RestoreBackup(io.ReaderAt, int64) error
+		RestoreBackup(r io.ReaderAt, size int64) error
+		// RestoreBackup receives an io.ReaderAt with the contents of
+		// the backup to be restored, the size of the backup and a
+		// destination folder (already exists) to unpack the backup
+		// into: how to do that is up to the engine. The contents of
+		// the reader SHOULD match the contents CreateBackup wrote
+		// but as it is supposed to be used manually it COULD have the
+		// wrong format
+		Unpack(r io.ReaderAt, size int64, destDir string) error
 	}
 )

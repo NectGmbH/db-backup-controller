@@ -27,7 +27,8 @@ const (
 	crdbCertDir = "/cockroach-certs"
 	crdbTimeout = 10 // 10 Sseconds
 
-	fileModeCert = 0o600
+	fileModeCert      = 0o600
+	fileModeUnpackDir = 0o700
 )
 
 type (
@@ -182,6 +183,43 @@ func (e *Engine) RestoreBackup(r io.ReaderAt, size int64) error {
 		u.String(),
 	); err != nil {
 		return errors.Wrap(err, "starting restore")
+	}
+
+	return nil
+}
+
+// Unpack takes a backup and unpacks the contents into the given
+// directory
+func (Engine) Unpack(r io.ReaderAt, size int64, destDir string) error {
+	br, err := newBackupReader(r, size, logrus.NewEntry(logrus.StandardLogger()))
+	if err != nil {
+		return errors.Wrap(err, "creating backup reader")
+	}
+
+	for name := range br.ar.footer {
+		r, err := br.ar.Open(name)
+		if err != nil {
+			return errors.Wrap(err, "opening contained file")
+		}
+
+		fn := path.Join(destDir, name)
+
+		if err = os.MkdirAll(path.Dir(fn), fileModeUnpackDir); err != nil {
+			return errors.Wrap(err, "creating required dirs")
+		}
+
+		f, err := os.Create(fn) //#nosec:G304 // Intended to write to user specified location
+		if err != nil {
+			return errors.Wrap(err, "creating output file")
+		}
+
+		if _, err = io.Copy(f, r); err != nil {
+			return errors.Wrap(err, "writing file contents")
+		}
+
+		if err = f.Close(); err != nil {
+			return errors.Wrap(err, "closing file")
+		}
 	}
 
 	return nil
