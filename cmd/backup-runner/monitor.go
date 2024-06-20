@@ -114,7 +114,7 @@ func (a *appMonitor) UpdateNextScheduled(t time.Time) {
 	}
 
 	// Copied from the implementation of SetToCurrentTime
-	a.mGNextScheduledBackup.Set(float64(t.UnixNano()) / 1e9) //nolint:gomnd
+	a.mGNextScheduledBackup.Set(float64(t.UnixNano()) / 1e9) //nolint:mnd
 }
 
 func (a *appMonitor) UpdateStoredBackupCount(n int) {

@@ -1,4 +1,4 @@
-FROM golang:1.21-bullseye as builder
+FROM golang:1.22.4-bullseye as builder
 
 COPY . /go/src/github.com/NectGmbH/db-backup-controller
 WORKDIR /go/src/github.com/NectGmbH/db-backup-controller

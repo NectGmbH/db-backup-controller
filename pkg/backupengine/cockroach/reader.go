@@ -131,7 +131,7 @@ func (backupReader) parseRange(r *http.Request) (start, end int64, isFull bool, 
 
 	// Parse the range into two values what to read
 	se := strings.Split(ranges[0], "-")
-	if len(se) != 2 { //nolint:gomnd
+	if len(se) != 2 { //nolint:mnd
 		return 0, 0, false, errors.New("unexpected range format")
 	}
 

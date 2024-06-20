@@ -131,6 +131,7 @@ func handleIPCRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//nolint:contextcheck // Makes no sense to pass this very short lived context through
 	go func() {
 		if err := triggerRunAction(payload.Action, payload.Args); err != nil {
 			logrus.WithError(err).Error("triggering action from IPC request")
@@ -225,7 +226,7 @@ func triggerRunAction(action string, args []string) error {
 		monitor.RegisterJobStatus(metricsLabelValueJobTypeBackup, err == nil)
 
 	case "restore":
-		if len(args) != 2 { //nolint:gomnd
+		if len(args) != 2 { //nolint:mnd
 			return errors.Errorf("invalid number of arguments")
 		}
 
