@@ -1,11 +1,11 @@
 ENGINE_IMAGES:=$(shell find ./pkg/backupengine -name 'Dockerfile*' | sed -E 's@.*/([^/]+)/Dockerfile.*@\1@' | sort | uniq)
-CODE_GEN_VERSION:=v0.28.1
+CODE_GEN_VERSION:=v0.30.3
 HELM:=helm3
 LOCAL_IMAGE:=registry.local.nect/db-backup-controller:t$(shell date +%s)
 TEST_RUNNER_NAME:=sha1-05eb843e76925a21a52bdc1acad03288810c87bf-0
 TESTENV_HUGEDATA:=false
 
-export CONTROLLER_GEN_VERSION:=v0.11.3
+export CONTROLLER_GEN_VERSION:=v0.15.0
 
 default: generate-code
 
