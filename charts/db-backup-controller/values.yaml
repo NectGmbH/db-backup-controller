@@ -1,22 +1,32 @@
 ---
 
 # Source of the built Docker image using the Dockerfile in the repo root
-image: 'ghcr.io/nectgmbh/db-backup-controller:latest'
+image:
+  repo: ghcr.io/nectgmbh/db-backup-controller-image
+  tag: ''
+
 # Specify imagePullPolicy for the deployment
 imagePullPolicy: 'IfNotPresent'
+
 # Enable / disable JSON format logging
 jsonLog: true
+
 # Valid log-levels for logrus (debug, info, error are used)
 logLevel: 'info'
+
 # How often to iterate through all existing backup definitions (1 / rescanInterval)
 rescanInterval: 1h
+
+# Alert / Monitoring configuration
 alertmanager:
   enableRules: true
   customRules: []
   jobFailed:
     for: 10m
+
 enableGrafanaDashboard: true
 enableServiceMonitor: true
+
 # Registry configuration to access the image provided above
 # (no configuration is added when registry is an empty string)
 imagePullSecret:

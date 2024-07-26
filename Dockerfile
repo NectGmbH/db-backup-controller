@@ -1,4 +1,4 @@
-FROM golang:1.22.4-bullseye as builder
+FROM golang:1.22.5 AS builder
 
 COPY . /go/src/github.com/NectGmbH/db-backup-controller
 WORKDIR /go/src/github.com/NectGmbH/db-backup-controller
@@ -24,7 +24,7 @@ RUN set -ex \
       -o /build/backup-runner
 
 
-FROM debian:11-slim
+FROM debian:12-slim
 
 LABEL maintainer "Knut Ahlers <ka@nect.com>"
 

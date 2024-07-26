@@ -1,0 +1,37 @@
+---
+
+defaults:
+  run:
+    shell: bash
+
+container:
+  image: golangci/golangci-lint:v1.59
+  env:
+    CGO_ENABLED: 0
+    GOPATH: /go
+
+runs-on: ubuntu-latest
+
+steps:
+  - uses: actions/checkout@v4
+    with:
+      show-progress: false
+
+  - name: Marking workdir safe
+    run: |
+      git config --global --add safe.directory /__w/db-backup-controller/db-backup-controller
+
+  - name: Setup go.work file
+    run: |
+      go work init
+      go work use \
+        ./ \
+        ./cmd/backup-controller \
+        ./cmd/backup-runner \
+        ./cmd/backup-unpack
+
+  - name: Lint and test code
+    run: |
+      make lint test
+
+...

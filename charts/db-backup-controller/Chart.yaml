@@ -2,13 +2,13 @@
 
 apiVersion: v2
 name: db-backup-controller
-version: v0.0.1
+version: '0.0.0'
 kubeVersion: '>= 1.21.0'
 description: Controller to provision database backup runners from CRD
 type: application
 maintainers:
   - name: Knut Ahlers
     email: ka@nect.com
-appVersion: v0.0.1
+appVersion: '0.0.0'
 
 ...

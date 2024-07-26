@@ -1,13 +1,26 @@
-ENGINE_IMAGES:=$(shell find ./pkg/backupengine -name 'Dockerfile*' | sed -E 's@.*/([^/]+)/Dockerfile.*@\1@' | sort | uniq)
-CODE_GEN_VERSION:=v0.30.3
-HELM:=helm3
-LOCAL_IMAGE:=registry.local.nect/db-backup-controller:t$(shell date +%s)
-TEST_RUNNER_NAME:=sha1-05eb843e76925a21a52bdc1acad03288810c87bf-0
-TESTENV_HUGEDATA:=false
+CODE_GEN_VERSION := v0.30.3
+export CONTROLLER_GEN_VERSION := v0.15.0
 
-export CONTROLLER_GEN_VERSION:=v0.15.0
+ENGINE_IMAGES := $(shell find ./pkg/backupengine -name 'Dockerfile*' | sed -E 's@.*/([^/]+)/Dockerfile.*@\1@' | sort | uniq)
 
+HELM := helm
+
+LOCAL_IMAGE := registry.local.nect/db-backup-controller:t$(shell date +%s)
+TEST_RUNNER_NAME := sha1-05eb843e76925a21a52bdc1acad03288810c87bf-0
+TESTENV_HUGEDATA := false
+
+
+# default is the default entry point to generate the code anew
 default: generate-code
+
+
+# build-engine-images is a shortcut for the CI to trigger a build and
+# push for all images required by the engines
+build-engine-images: $(patsubst %,build-engine-image-%,$(ENGINE_IMAGES))
+build-engine-image-%:
+	# Should only build when GITHUB_SHA or an override is present
+	[ -n "$(GITHUB_SHA)" ] || [ -n "$(IMAGE_NAME_OVERRIDE)" ]
+	bash ./ci/push-engine-image.sh $*
 
 # generate-code updates the CRDs in the Helm chart and generates the
 # contents of the ./pkg/generated folder. Contents of the respective
@@ -21,12 +34,22 @@ generate-code: ci/controller-gen ci/code-generator
 		paths=./pkg/apis/...
 	bash ci/codegen.sh
 
-# build-engine-images is a shortcut for the CI to trigger a build and
-# push for all images required by the engines
-build-engine-images: $(patsubst %,build-engine-image-%,$(ENGINE_IMAGES))
-build-engine-image-%:
-	[ -n "$(DRONE_COMMIT_SHA)" ] || [ -n "$(IMAGE_NAME_OVERRIDE)" ] # Can only build when DRONE_COMMIT_SHA is present
-	bash ./ci/push-engine-image.sh $*
+
+# --- CI
+
+gh-workflow:
+	bash ci/create-workflow.sh
+
+lint: ci/code-generator
+	golangci-lint run  \
+		./... \
+		./cmd/backup-controller \
+		./cmd/backup-runner \
+		./cmd/backup-unpack
+
+test: ci/code-generator
+	go test -v -cover ./...
+
 
 # --- Local setup
 
@@ -40,7 +63,8 @@ deploy-local: docker-build-local
 		--create-namespace \
 		--install \
 		--namespace db-backup-controller \
-		--set image=$(LOCAL_IMAGE) \
+		--set image.repo=$(word 1,$(subst :, ,$(LOCAL_IMAGE))) \
+		--set image.tag=$(word 2,$(subst :, ,$(LOCAL_IMAGE))) \
 		--set imagePullPolicy=Always \
 		--set jsonLog=false \
 		--set logLevel=debug \
@@ -50,6 +74,13 @@ deploy-local: docker-build-local
 		./charts/db-backup-controller
 
 deploy-testenv:
+	$(HELM) repo add \
+		cockroachdb \
+		https://charts.cockroachdb.com/
+
+	$(HELM) dependency build \
+		./charts/testenv
+
 	$(HELM) upgrade \
 		--create-namespace \
 		--install \
@@ -66,6 +97,16 @@ force-local-backup:
 force-local-restore:
 	kubectl -n db-backup-controller exec -ti $(TEST_RUNNER_NAME) -- \
 		/usr/local/bin/backup-runner restore $(shell date --iso-8601=seconds)
+
+undeploy-testenv:
+	$(HELM) delete \
+		--namespace db-backup-controller-testenv \
+		--wait \
+		db-backup-controller-testenv
+
+	kubectl delete \
+		namespace/db-backup-controller-testenv
+
 
 # --- Build tooling
 

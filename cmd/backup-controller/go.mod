@@ -7,13 +7,13 @@ toolchain go1.22.4
 replace github.com/NectGmbH/db-backup-controller => ../../
 
 require (
-	github.com/NectGmbH/db-backup-controller v0.0.0-20240620112604-4b7ccdfd95c0
 	github.com/Luzifer/go_helpers/v2 v2.25.0
 	github.com/Luzifer/rconfig/v2 v2.5.0
+	github.com/NectGmbH/db-backup-controller v0.0.0-20240620112604-4b7ccdfd95c0
 	github.com/bombsimon/logrusr/v4 v4.1.0
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.9.3
-	k8s.io/apimachinery v0.30.2
+	k8s.io/apimachinery v0.30.3
 	k8s.io/client-go v0.30.2
 	k8s.io/klog/v2 v2.130.1
 )

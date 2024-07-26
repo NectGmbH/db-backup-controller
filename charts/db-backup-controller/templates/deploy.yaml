@@ -1,3 +1,8 @@
+{{-
+  $image := printf "%s:%s"
+              .Values.image.repo
+              (.Values.image.tag | default .Chart.AppVersion)
+-}}
 ---
 
 apiVersion: apps/v1
@@ -27,7 +32,7 @@ spec:
     spec:
       containers:
         - name: db-backup-controller
-          image: '{{ .Values.image }}'
+          image: {{ $image | quote }}
           imagePullPolicy: '{{ .Values.imagePullPolicy }}'
           env:
             - name: JSON_LOG
@@ -35,7 +40,7 @@ spec:
             - name: LOG_LEVEL
               value: '{{ .Values.logLevel }}'
             - name: IMAGE_PREFIX
-              value: '{{ .Values.image }}'
+              value: {{ $image | quote }}
             - name: RESCAN_INTERVAL
               value: '{{ .Values.rescanInterval }}'
             - name: TARGET_NAMESPACE

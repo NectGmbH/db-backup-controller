@@ -7,8 +7,8 @@ toolchain go1.22.4
 replace github.com/NectGmbH/db-backup-controller => ../../
 
 require (
-	github.com/NectGmbH/db-backup-controller v0.0.0-20240620112604-4b7ccdfd95c0
 	github.com/Luzifer/go_helpers/v2 v2.25.0
+	github.com/NectGmbH/db-backup-controller v0.0.0-20240620112604-4b7ccdfd95c0
 	github.com/gorilla/mux v1.8.1
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.19.1
@@ -67,7 +67,7 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/api v0.30.2 // indirect
-	k8s.io/apimachinery v0.30.2 // indirect
+	k8s.io/apimachinery v0.30.3 // indirect
 	k8s.io/client-go v0.30.2 // indirect
 	k8s.io/klog/v2 v2.130.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20240521193020-835d969ad83a // indirect

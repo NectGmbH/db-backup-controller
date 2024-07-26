@@ -3,3 +3,4 @@ ci/code-generator
 ci/controller-gen
 cmd/backup-controller/backup-controller
 cmd/backup-unpack/backup-unpack
+db-backup-controller-*.tgz
