@@ -19,7 +19,7 @@ spec:
           cp /cockroach-certs/* /cockroach-certs-permfix/
           chmod 0400 /cockroach-certs-permfix/*
 
-          echo '/cockroach/cockroach sql --host={{ include "com.nect.cockroachdb.fullname" . }}-public --port={{ .Values.cockroachdb.conf.port }} --certs-dir=/cockroach-certs-permfix --user=root' >/usr/local/bin/csql
+          echo -e '#!/usr/bin/env bash\nset -euo pipefail\n exec /cockroach/cockroach sql --host={{ include "com.nect.cockroachdb.fullname" . }}-public --port={{ .Values.cockroachdb.conf.port }} --certs-dir=/cockroach-certs-permfix --user=root "$@"' >/usr/local/bin/csql
           chmod 0755 /usr/local/bin/csql
 
           while :; do sleep 1; done

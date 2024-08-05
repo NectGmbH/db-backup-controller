@@ -51,6 +51,7 @@ For local testing a Minikube cluster is recommended. Also you need a registry to
 - `make deploy-local` - Builds all Docker images required, pushes them into the registry mentioned in the `LOCAL_IMAGE` and then deploys the `db-backup-controller` chart into your current Kubernetes context (which should be the Minikube)
 - `make deploy-testenv` - Deploys a test environment consisting of a CockroachDB including test data, MinIO, `DatabaseBackupStorageClass` and `DatabaseBackup` into your current Kubernetes context. When setting `TESTENV_HUGEDATA=true` during the deployment a large amount of data is inserted into the database which might take a while. This is intended to test big backups so make sure you do have enough storage space to accomodate for all the data.
 - `make force-local-backup` - Executes a backup in the testenv (will fail when testenv is not deployed). See the logs of the backup-runner in the `db-backup-controller-testenv` namespace for its current status.
+- `make force-local-dbdelete` - Removes the `database` database from the CRDB instance so the `force-local-restore` can indeed restore the database
 - `make force-local-restore` - Executes a restore of the last backup of the testenv. Again look for logs in the runner in the namespace. It will fail if you don't delete the database before executing the restore (intended behavior as CRDB refuses to restore over an existing database).
 
 

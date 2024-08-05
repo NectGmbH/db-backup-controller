@@ -94,6 +94,10 @@ force-local-backup:
 	kubectl -n db-backup-controller exec -ti $(TEST_RUNNER_NAME) -- \
 		/usr/local/bin/backup-runner backup
 
+force-local-dbdelete:
+	kubectl -n db-backup-controller-testenv exec db-backup-controller-testenv-debug -- \
+		bash /usr/local/bin/csql -e 'DROP DATABASE database CASCADE'
+
 force-local-restore:
 	kubectl -n db-backup-controller exec -ti $(TEST_RUNNER_NAME) -- \
 		/usr/local/bin/backup-runner restore $(shell date --iso-8601=seconds)
